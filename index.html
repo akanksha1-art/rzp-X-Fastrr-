@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Battle Card — Fastrr vs Razorpay Magic Checkout (16 checkpoints)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0F1730;
+    --paper:#F3F4F1;
+    --card:#FFFFFF;
+    --blue:#2E3EE0;
+    --blue-deep:#1B2590;
+    --green:#178A5C;
+    --green-bg:#E4F5EC;
+    --coral:#D94F4F;
+    --line:#DEE0D8;
+    --muted:#666B63;
+  }
+  *{box-sizing:border-box;}
+  @media (prefers-reduced-motion: reduce){ *{animation-duration:0.001ms !important; transition-duration:0.001ms !important;} }
+  body{
+    margin:0;
+    background:var(--paper);
+    background-image:radial-gradient(circle at 1px 1px, rgba(15,23,48,0.055) 1px, transparent 1px);
+    background-size:22px 22px;
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px; margin:0 auto; padding:32px 24px 70px;}
+
+  /* HEADER */
+  .waybill{
+    background:var(--ink); color:#fff; border-radius:18px;
+    padding:32px 36px; position:relative; overflow:hidden;
+    box-shadow:0 20px 50px -20px rgba(15,23,48,0.5);
+  }
+  .waybill::before{
+    content:""; position:absolute; inset:0;
+    background:repeating-linear-gradient(135deg, rgba(255,255,255,0.03) 0 2px, transparent 2px 14px);
+    pointer-events:none;
+  }
+  .waybill-top{display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:18px;
+    border-bottom:1px dashed rgba(255,255,255,0.25); padding-bottom:20px;}
+  .waybill-eyebrow{font-family:'IBM Plex Mono',monospace; font-size:11.5px; letter-spacing:0.14em; color:#9AA3E8; text-transform:uppercase;}
+  .waybill-title{font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:clamp(34px,5.5vw,58px); line-height:0.95; text-transform:uppercase; margin:6px 0 0;}
+  .awb{text-align:right; font-family:'IBM Plex Mono',monospace;}
+  .awb .label{font-size:10.5px; color:#9AA3E8; letter-spacing:0.12em; text-transform:uppercase;}
+  .awb .num{font-size:17px; font-weight:600; margin-top:2px;}
+  .route{display:flex; align-items:center; gap:14px; margin-top:20px; flex-wrap:wrap;}
+  .route .stop{font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:18px; letter-spacing:0.03em; text-transform:uppercase; padding:8px 16px; border-radius:999px;}
+  .route .stop.origin{background:rgba(217,79,79,0.18); color:#FF9E9E; border:1px solid rgba(255,158,158,0.35);}
+  .route .stop.dest{background:rgba(46,62,224,0.35); color:#C9CFFF; border:1px solid rgba(201,207,255,0.4);}
+  .route .arrow{color:#5B65AE; font-size:19px;}
+  .route .sub{font-size:13px; color:#AEB3D6; margin-left:auto;}
+
+  /* TABLE */
+  .tbl-wrap{
+    margin-top:40px;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:16px;
+    overflow:hidden;
+  }
+  table{width:100%; border-collapse:collapse;}
+  thead th{
+    position:sticky; top:0; z-index:2;
+    background:var(--ink); color:#fff;
+    font-family:'Barlow Condensed',sans-serif; text-transform:uppercase;
+    font-weight:700; letter-spacing:0.03em;
+    padding:18px 22px; text-align:left; font-size:17px;
+  }
+  thead th.col-feature{width:24%; color:#B9BEE8;}
+  thead th.col-fastrr{width:38%; color:#fff; background:linear-gradient(90deg, var(--blue-deep), #232FA8);}
+  thead th.col-razorpay{width:38%; color:#EADCDC;}
+  thead th span.sub{
+    display:block; font-family:'IBM Plex Mono',monospace; font-size:10.5px;
+    font-weight:400; letter-spacing:0.06em; text-transform:none; margin-top:3px; opacity:0.75;
+  }
+  tbody tr{border-top:1px solid var(--line);}
+  tbody tr:nth-child(even){background:#FAFAF8;}
+  td{padding:20px 22px; vertical-align:top; font-size:14px; line-height:1.55;}
+  td.feature-cell{
+    font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:16px;
+    text-transform:uppercase; letter-spacing:0.01em; color:var(--ink);
+    border-right:1px solid var(--line);
+  }
+  td.feature-cell .cp{
+    display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:10.5px;
+    color:var(--blue-deep); background:#EDEEFB; border:1px solid #CBD0F5;
+    padding:2px 7px; border-radius:5px; margin-bottom:8px; letter-spacing:0.08em;
+  }
+  td.fastrr-cell{background:rgba(23,138,92,0.035); border-right:1px solid var(--line);}
+  td.razorpay-cell{background:rgba(217,79,79,0.03);}
+  .verdict{display:flex; align-items:flex-start; gap:9px; margin-bottom:8px;}
+  .badge{
+    flex-shrink:0; width:19px; height:19px; border-radius:5px;
+    display:inline-flex; align-items:center; justify-content:center;
+    font-size:11px; font-weight:800; color:#fff; margin-top:1px;
+  }
+  .fastrr-cell .badge{background:var(--green);}
+  .razorpay-cell .badge.cross{background:var(--coral);}
+  .razorpay-cell .badge.partial{background:#C97F1F;}
+  .razorpay-cell .badge.eq{background:#6B7280;}
+  .strengths{margin-top:40px;background:#fff;border:1px solid var(--line);border-left:5px solid #C97F1F;border-radius:16px;padding:24px 28px;}
+  .strengths h4{font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;font-size:19px;letter-spacing:.02em;margin:0 0 10px;}
+  .strengths ul{margin:0;padding-left:20px;font-size:13.5px;line-height:1.7;color:#3A3F36;}
+  .srcs{margin-top:10px;font-size:10.5px;line-height:1.7;color:var(--muted);}
+  .srcs a{color:var(--blue-deep);}
+  .verdict p{margin:0; color:#242A1F;}
+  .stat-row{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;}
+  .stat{background:var(--green-bg); border:1px solid #BFE4D2; border-radius:8px; padding:6px 10px; min-width:88px;}
+  .razorpay-cell .stat{background:#FBF0DD; border-color:#F0D8A6;}
+  .stat .n{font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:14px; display:block;}
+  .stat .l{font-size:9.5px; color:var(--muted); text-transform:uppercase; letter-spacing:0.04em;}
+  .why-row td{background:#F5F5F1; font-size:12.5px; color:var(--muted); padding:12px 22px 16px; border-right:none;}
+  .why-row td strong{color:var(--ink);}
+
+  /* SUMMARY */
+  .summary{margin-top:40px; display:grid; grid-template-columns:1.3fr 1fr; gap:20px;}
+  @media (max-width:760px){ .summary{grid-template-columns:1fr;} }
+  .summary-panel{background:var(--ink); color:#fff; border-radius:16px; padding:26px 28px;}
+  .summary-panel h4{font-family:'Barlow Condensed',sans-serif; text-transform:uppercase; font-size:19px; letter-spacing:0.02em; margin:0 0 12px; color:#C9CFFF;}
+  .summary-panel ol{margin:0; padding-left:20px; font-size:13.5px; line-height:1.65; color:#D7D9EE;}
+  .summary-panel li::marker{font-family:'IBM Plex Mono',monospace; color:#7B85D6;}
+  .stamp{
+    border:2px solid var(--green); border-radius:16px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:24px; text-align:center; background:var(--green-bg);
+  }
+  .stamp .ring{
+    width:68px; height:68px; border-radius:50%; border:3px solid var(--green);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:12px;
+    color:var(--green); text-transform:uppercase; line-height:1.1; transform:rotate(-8deg); margin-bottom:10px;
+  }
+  .stamp .line1{font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:20px; text-transform:uppercase; color:var(--green);}
+  .stamp .line2{font-size:12px; color:#2B5B44; margin-top:6px;}
+
+  footer{margin-top:34px; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--muted); letter-spacing:0.06em;}
+
+  /* MOBILE: stack table into cards */
+  @media (max-width:720px){
+    thead{display:none;}
+    table, tbody, tr, td{display:block; width:100%;}
+    tbody tr{border-top:2px solid var(--ink); margin-top:14px;}
+    tbody tr:first-child{margin-top:0;}
+    td{border-right:none !important; padding:14px 18px;}
+    td.feature-cell{background:var(--ink); color:#fff; border-radius:0;}
+    td.feature-cell .cp{background:rgba(255,255,255,0.12); border-color:rgba(255,255,255,0.25); color:#C9CFFF;}
+    td.fastrr-cell::before{content:"Shiprocket | Fastrr"; display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--green); margin-bottom:8px;}
+    td.razorpay-cell::before{content:"Razorpay Magic Checkout"; display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--coral); margin-bottom:8px;}
+    .why-row td{background:#F0F0EC;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="waybill">
+    <div class="waybill-top">
+      <div>
+        <div class="waybill-eyebrow">Competitive Waybill · Product Page to Post-Purchase</div>
+        <h1 class="waybill-title">Battle Card</h1>
+      </div>
+      <div class="awb">
+        <div class="label">Consignment No.</div>
+        <div class="num">AWB-FASTRR-VS-RZP-MAGIC-16</div>
+      </div>
+    </div>
+    <div class="route">
+      <span class="stop origin">Razorpay Magic Checkout</span>
+      <span class="arrow">→</span>
+      <span class="stop dest">Shiprocket | Fastrr</span>
+      <span class="sub">16-point side-by-side · logistics-led checkout vs. payment-gateway-led checkout</span>
+    </div>
+  </header>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th class="col-feature">Checkpoint<span class="sub">what's being compared</span></th>
+          <th class="col-fastrr">Shiprocket | Fastrr<span class="sub">logistics-owned, PG-agnostic</span></th>
+          <th class="col-razorpay">Razorpay Magic Checkout<span class="sub">payment-gateway-led checkout</span></th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <tr>
+          <td class="feature-cell"><span class="cp">CP·01</span><br>PG choice &amp; load balancing</td>
+          <td class="fastrr-cell">
+            <div class="verdict"><span class="badge">✓</span><p>Integratable with any PG the merchant already chooses, plus a multi-PG load balancer that routes transactions across gateways to cut failures and downtime.</p></div>
+            <div class="stat-row"><div class="stat"><span class="n">Multi-PG</span><span class="l">merchant's choice</span></div></div>
+          </td>
+          <td class="razorpay-cell">
+            <div class="verdict"><span class="badge cross">✕</span><p>Magic Checkout is built to consolidate payments onto a single gateway — Razorpay markets it explicitly as a way to "eliminate multiple payment gateways." Fine if you're happy locking in on Razorpay; a constraint if you're not.</p></div>
+            <div class="stat-row"><div class="stat"><span class="n">1 PG</span><span class="l">Razorpay only</span></div></div>
+          </td>
+        </tr>
+        <tr class="why-row"><td colspan="3"><strong>Why it matters:</strong> a load-balanced, PG-agnostic checkout means one gateway's downtime or a renegotiated rate elsewhere never holds the merchant's checkout hostage.</td></tr>
+
+        <tr>
+          <td class="feature-cell"><span class="cp">CP·02</span><br>0% MDR blended model</td>
+          <td class="fastrr-cell">
+            <div class="verdict"><span class="badge">✓</span><p>0% MDR structure for prepaid orders — full order value is credited to the merchant's bank account, with platform commercials settled separately.</p></div>
+            <div class="stat-row">
+              <div class="stat"><span class="n">0%</span><span class="l">MDR on prepaid</span></div>
+              <div class="stat"><span class="n">Full</span><span class="l">order value credited</span></div>
+            </div>
+          </td>
+          <td class="razorpay-cell">
+            <div class="verdict"><span class="badge cross">✕</span><p>As a payment gateway, Razorpay's commercials are built around standard MDR on transactions — margin is baked into every prepaid order rather than settled separately.</p></div>
+          </td>
+        </tr>
+        <tr class="why-row"><td colspan="3"><strong>Why it matters:</strong> separating platform commercials from settlement protects working capital and lets brands scale prepaid volume without losing margin on every order.</td></tr>
+
+        <tr>
+          <td class="feature-cell"><span class="cp">CP·03</span><br>Address prefill</td>
+          <td class="fastrr-cell">
+            <div class="verdict"><span class="badge">✓</span><p>Prefill from the SSO Universal Data System — built on addresses actually shipped &amp; delivered across Shiprocket &amp; Pickrr, live from the first visit, no prior login needed.</p></div>
+            <div class="stat-row">
+              <div class="stat"><span class="n">250M+</span><span class="l">address DB</span></div>
+              <div class="stat"><span class="n">95%+</span><span class="l">tier 1 prefill</span></div>
+            </div>
+          </td>
+          <td class="razorpay-cell">
+            <div class="verdict"><span class="badge partial">~</span><p>Intelligent Prefills work through Razorpay's own shopper network — details fill in only once a shopper has logged in and used Magic Checkout before, on a Magic-enabled store. New-to-network shoppers get no prefill benefit.</p></div>
+            <div class="stat-row"><div class="stat"><span class="n">Login-gated</span><span class="l">network prefill</span></div></div>
+          </td>
+        </tr>
+        <tr class="why-row"><td colspan="3"><strong>Why it matters:</strong> prefill built on confirmed delivery outcomes works for every visitor from day one — network prefill only works for shoppers already inside that specific network.</td></tr>
+
+        <tr>
+          <td class="feature-cell"><span class="cp">CP·04</span><br>Delivery visibility</td>
+          <td class="fastrr-cell">
+            <div class="verdict"><span class="badge">✓</span><p>Same-day, next-day and hyperlocal delivery visibility shown live at checkout, sourced directly from Shiprocket's own courier network — not a third-party estimate.</p></div>
+            <div class="stat-row"><div class="stat"><span class="n">Live</span><span class="l">same/next-day + hyperlocal</span></div></div>
+          </td>
+          <td class="razorpay-cell">
+            <div class="verdict"><span class="badge cross">✕</span><p>Magic Checkout integrates with external logistics partners for fulfilment, but has no owned courier network of its own — so it has no native same-day/next-day/hyperlocal delivery signal to show at checkout.</p></div>
+          </td>
+        </tr>
+        <tr class="why-row"><td colspan="3"><strong>Why it matters:</strong> speed-of-delivery visibility at checkout is only credible when it comes from the network actually moving the package.</td></tr>
+
+        <tr>
+          <td class="feature-cell"><span class="cp">CP·05</span><br>RTO &amp; COD risk intelligence</td>
+          <td class="fastrr-cell">
+            <div class="verdict"><span class="badge">✓</span><p>Orders scored and tagged for RTO/NDR risk using real shipping outcomes — prior delivery history, refusal patterns, pincode-level RTO trends — before the order even ships.</p></div>
+            <div class="stat-row"><div class="stat"><span class="n">5 tags</span><span class="l">risk categories</span></div></div>
+          </td>
+          <td class="razorpay-cell">
+            <div class="verdict"><span class="badge partial">~</span><p>Magic Checkout scores COD risk using shopping history and address-quality analysis, and lets merchants nudge COD orders to prepaid via a WhatsApp discount link post-order. Useful, but it's payment-behaviour data, not shipping-outcome data.</p></div>
+          </td>
+        </tr>
+        <tr class="why-row"><td colspan="3"><strong>Why it matters:</strong> risk signals sourced from what actually happens at the doorstep catch cases that payment-and-address-format checks alone will miss.</td></tr>
+
+        <tr>
+          <td class="feature-cell"><span class="cp">CP·06</span><br>Pay after delivery</td>
+          <td class="fastrr-cell">
+            <div class="verdict"><span class="badge">✓</span><p>UPI mandate approved upfront and held securely; customer is charged only after successful delivery. Auto-cancels in 30 days if delivery doesn't happen — converts prepaid-hesitant shoppers without merchants taking on COD cash-collection risk.</p></div>
+            <div class="stat-row">
+              <div class="stat"><span class="n">Nov '25</span><span class="l">feature launch</span></div>
+              <div class="stat"><span class="n">Higher</span><span class="l">adoption to date</span></div>
+            </div>
+          </td>
+          <td class="razorpay-cell">
+            <div class="verdict"><span class="badge cross">✕</span><p>No pay-after-delivery construct. Magic Checkout's prepaid push is a post-order incentive (WhatsApp discount link), not a "charged only on delivery" mandate structure.</p></div>
+          </td>
+        </tr>
+        <tr class="why-row"><td colspan="3"><strong>Why it matters:</strong> giving prepaid the same "you only pay once it arrives" reassurance as COD converts hesitant shoppers at the moment of intent, not after.</td></tr>
+
+        <tr>
+          <td class="feature-cell"><span class="cp">CP·07</span><br>Funnel visibility</td>
+          <td class="fastrr-cell">
+            <div class="verdict"><span class="badge">✓</span><p>Full commerce-funnel visibility — cart → checkout drop-offs, payment failures &amp; retries, COD → prepaid movement, and conversion blockers across the entire journey, since product page, checkout and shipping data all sit on one stack.</p></div>
+          </td>
+          <td class="razorpay-cell">
+            <div class="verdict"><span class="badge partial">~</span><p>Real-time notifications and RTO analytics cover the payment and post-order layer well, but visibility is naturally centred on the payment stage rather than the full cart-to-delivery funnel.</p></div>
+          </td>
+        </tr>
+        <tr class="why-row"><td colspan="3"><strong>Why it matters:</strong> fixing drop-off requires seeing the whole funnel, not just where payments succeed or fail.</td></tr>
+
+        <tr>
+          <td class="feature-cell"><span class="cp">CP·08</span><br>EDD on the product page</td>
+          <td class="fastrr-cell">
+            <div class="verdict"><span class="badge">✓</span><p>Dynamic estimated delivery date on the PDP with the pincode pre-filled from the shopper's last delivered address, so she types nothing. Predicted from live courier data across the Shiprocket network, and repeated again at checkout.</p></div>
+            <div class="stat-row"><div class="stat"><span class="n">96%+</span><span class="l">EDD accuracy</span></div><div class="stat"><span class="n">12–22%</span><span class="l">PDP → cart lift</span></div></div>
+          </td>
+          <td class="razorpay-cell">
+            <div class="verdict"><span class="badge partial">~</span><p>Magic Checkout can show an estimated delivery timeline ("Display Delivery in"), but it is set up from merchant-configured shipping profiles by zone, ZIP code and order amount or weight slabs. It is a checkout feature, with no pre-filled-pincode date on the product page described in the docs we reviewed.</p></div>
+            <div class="stat-row"><div class="stat"><span class="n">Checkout</span><span class="l">timeline, rule-based</span></div></div>
+          </td>
+        </tr>
+        <tr class="why-row"><td colspan="3"><strong>Why it matters:</strong> the date matters most before she adds to cart, and it is only credible when it comes from courier performance, not a static rule table.</td></tr>
+
+        <tr>
+          <td class="feature-cell"><span class="cp">CP·09</span><br>Quick Pay &amp; SSO</td>
+          <td class="fastrr-cell">
+            <div class="verdict"><span class="badge">✓</span><p>One-tap UPI through the shopper's preferred app (GPay, PhonePe, Paytm), pre-selected at checkout, with SSO-powered acceleration so returning shoppers skip OTPs, address entry and payment selection.</p></div>
+            <div class="stat-row"><div class="stat"><span class="n">65%</span><span class="l">SSO checkout acceleration</span></div><div class="stat"><span class="n">80→92%</span><span class="l">prepaid share, Fixderma</span></div></div>
+          </td>
+          <td class="razorpay-cell">
+            <div class="verdict"><span class="badge partial">~</span><p>Saved addresses and payment details are reused across Razorpay-network sites, and the product page cites biometric one-click and a UPI tap. The speed gain depends on the shopper already being inside Razorpay's network.</p></div>
+            <div class="stat-row"><div class="stat"><span class="n">Network-gated</span><span class="l">one-click</span></div></div>
+          </td>
+        </tr>
+        <tr class="why-row"><td colspan="3"><strong>Why it matters:</strong> a returning shopper from any source should check out in a tap, and not only the ones already known to one payment vendor.</td></tr>
+
+        <tr>
+          <td class="feature-cell"><span class="cp">CP·10</span><br>Smart gateway switching &amp; payment personalisation</td>
+          <td class="fastrr-cell">
+            <div class="verdict"><span class="badge">✓</span><p>Each transaction is routed in real time to the best-performing gateway, and payment modes are ordered per shopper, so the method and offer she is most likely to complete with comes first. Fewer failures in high-traffic sale hours.</p></div>
+            <div class="stat-row"><div class="stat"><span class="n">28→19%</span><span class="l">payment abandonment (AI-suggested modes)</span></div><div class="stat"><span class="n">Real-time</span><span class="l">gateway routing</span></div></div>
+          </td>
+          <td class="razorpay-cell">
+            <div class="verdict"><span class="badge cross">✕</span><p>Payments run on one gateway by design, so there is nothing to switch to when that gateway has a weak hour. Razorpay lists 100+ payment methods, but all through its own gateway.</p></div>
+            <div class="stat-row"><div class="stat"><span class="n">1 PG</span><span class="l">no cross-gateway routing</span></div></div>
+          </td>
+        </tr>
+        <tr class="why-row"><td colspan="3"><strong>Why it matters:</strong> at sale-day volume, a single point of payment success is hundreds of orders a month. Routing is how it is protected.</td></tr>
+
+        <tr>
+          <td class="feature-cell"><span class="cp">CP·11</span><br>AI upsell &amp; milestone bar in cart</td>
+          <td class="fastrr-cell">
+            <div class="verdict"><span class="badge">✓</span><p>AI-picked add-ons in an expandable upsell view inside the cart, with variants selectable in place, plus a milestone bar toward a free gift or higher offer tier. Also an upsell on the checkout page itself.</p></div>
+            <div class="stat-row"><div class="stat"><span class="n">Cart + checkout</span><span class="l">two upsell points</span></div></div>
+          </td>
+          <td class="razorpay-cell">
+            <div class="verdict"><span class="badge cross">✕</span><p>No upsell product is described in Razorpay's Magic Checkout docs or product page. The closest items are BXGY, free-shipping and freebie coupons, which are discounts, not a recommendation engine.</p></div>
+            
+          </td>
+        </tr>
+        <tr class="why-row"><td colspan="3"><strong>Why it matters:</strong> a checkout that only discounts lowers margin. One that adds the right item raises average order value.</td></tr>
+
+        <tr>
+          <td class="feature-cell"><span class="cp">CP·12</span><br>PDP offers widget &amp; bank offers</td>
+          <td class="fastrr-cell">
+            <div class="verdict"><span class="badge">✓</span><p>A "best price for you" bar beside Add to Cart, with prepaid and bank offers sourced by the team and shown upfront as their own block. Best offer applied automatically.</p></div>
+            <div class="stat-row"><div class="stat"><span class="n">PDP + cart</span><span class="l">offers surfaced early</span></div></div>
+          </td>
+          <td class="razorpay-cell">
+            <div class="verdict"><span class="badge partial">~</span><p>Strong here. Razorpay has an AI coupon engine (12+ coupon types), "auto-apply best coupon", and an affordability widget showing personalised offers and cashback on product pages. Do not lead with this one.</p></div>
+            <div class="stat-row"><div class="stat"><span class="n">Near parity</span><span class="l">offers & coupons</span></div></div>
+          </td>
+        </tr>
+        <tr class="why-row"><td colspan="3"><strong>Why it matters:</strong> expect Razorpay to match on offers. Win on what sits beside them: delivery date, risk-based payment options and routing.</td></tr>
+
+        <tr>
+          <td class="feature-cell"><span class="cp">CP·13</span><br>Instalments &amp; BNPL (Snapmint)</td>
+          <td class="fastrr-cell">
+            <div class="verdict"><span class="badge">✓</span><p>Snapmint cardless instalments sit in the same checkout beside UPI, cards and Pay After Delivery, with the monthly amount shown on the product page and in the cart.</p></div>
+            <div class="stat-row"><div class="stat"><span class="n">Cardless</span><span class="l">monthly instalments</span></div></div>
+          </td>
+          <td class="razorpay-cell">
+            <div class="verdict"><span class="badge eq">=</span><p>Parity. Razorpay lists BNPL, EMI and cashback options, and offers Snapmint on its checkout on request. Not a differentiator on its own.</p></div>
+            <div class="stat-row"><div class="stat"><span class="n">Available</span><span class="l">EMI / BNPL / Snapmint</span></div></div>
+          </td>
+        </tr>
+        <tr class="why-row"><td colspan="3"><strong>Why it matters:</strong> present it as one more route in a checkout that also decides, per shopper, between prepaid, instalments, Pay After Delivery and COD.</td></tr>
+
+        <tr>
+          <td class="feature-cell"><span class="cp">CP·14</span><br>Custom rule engine &amp; A/B testing</td>
+          <td class="fastrr-cell">
+            <div class="verdict"><span class="badge">✓</span><p>Merchants combine RTO risk, cart value and shopper type into their own rules, for example "high risk and order value above a threshold, then offer Pay After Delivery", and A/B test rules to see which wins on conversion and RTO.</p></div>
+            <div class="stat-row"><div class="stat"><span class="n">A/B tested</span><span class="l">rules, not guesses</span></div></div>
+          </td>
+          <td class="razorpay-cell">
+            <div class="verdict"><span class="badge partial">~</span><p>COD rules exist (slabs, zones, product categories, a blocklist), and risk is reviewed with Razorpay's insights. A/B testing of rules is not described in the docs we reviewed.</p></div>
+            <div class="stat-row"><div class="stat"><span class="n">COD rules</span><span class="l">static</span></div></div>
+          </td>
+        </tr>
+        <tr class="why-row"><td colspan="3"><strong>Why it matters:</strong> high-AOV brands need an order-value lever. A rule that is tested beats one that is assumed.</td></tr>
+
+        <tr>
+          <td class="feature-cell"><span class="cp">CP·15</span><br>Save &amp; Subscribe</td>
+          <td class="fastrr-cell">
+            <div class="verdict"><span class="badge">✓</span><p>Repeat delivery that places itself: the shopper picks an interval on the product page or in the cart, address and payment are remembered, and each renewal is charged without restarting checkout.</p></div>
+            <div class="stat-row"><div class="stat"><span class="n">PDP + cart</span><span class="l">selector</span></div></div>
+          </td>
+          <td class="razorpay-cell">
+            <div class="verdict"><span class="badge partial">~</span><p>Subscriptions are a separate Razorpay product and are not described inside the Magic Checkout docs we reviewed.</p></div>
+            
+          </td>
+        </tr>
+        <tr class="why-row"><td colspan="3"><strong>Why it matters:</strong> for consumable and replenishment categories, repeat revenue should start at the first checkout.</td></tr>
+
+        <tr>
+          <td class="feature-cell"><span class="cp">CP·16</span><br>Re-engagement: AI assistant, AI calling, WhatsApp</td>
+          <td class="fastrr-cell">
+            <div class="verdict"><span class="badge">✓</span><p>fastrr Connect brings WhatsApp journeys from the anonymous visit onward, an AI shopping assistant that answers in about 3 seconds, and AI calling for abandoned carts, all on the same data as checkout.</p></div>
+            <div class="stat-row"><div class="stat"><span class="n">~3 sec</span><span class="l">AI assistant answers</span></div><div class="stat"><span class="n">55%</span><span class="l">abandon if a question goes unanswered</span></div></div>
+          </td>
+          <td class="razorpay-cell">
+            <div class="verdict"><span class="badge cross">✕</span><p>Not part of Magic Checkout as described. The nearest item is a post-order WhatsApp discount link to move COD orders to prepaid.</p></div>
+            
+          </td>
+        </tr>
+        <tr class="why-row"><td colspan="3"><strong>Why it matters:</strong> the sale is often lost before checkout. A suite that talks to the shopper before and after the cart closes more of them.</td></tr>
+
+      </tbody>
+    </table>
+  </div>
+
+  <section class="strengths">
+    <h4>Where Razorpay is credible — do not fight head-on</h4>
+    <ul>
+      <li><b>Offers and coupons:</b> an AI coupon engine with 12+ coupon types, auto-apply best coupon, and a PDP affordability widget with personalised offers.</li>
+      <li><b>Payment breadth:</b> 100+ payment methods including BNPL and EMI, with Snapmint available on request.</li>
+      <li><b>RTO protection:</b> COD blocking for past RTO behaviour, and reimbursement on failed COD deliveries on its product page.</li>
+      <li><b>Delivery timeline at checkout:</b> available through shipping profiles, so frame the gap as accuracy, product-page placement and pre-filled pincode, not "no delivery date at all".</li>
+    </ul>
+    <div class="srcs">Razorpay claims above and in CP·08 to CP·16 are taken from Razorpay's public Magic Checkout documentation and product page, reviewed Nov 2026, and describe what is stated there, not what may exist behind a sales conversation. Verify before quoting a customer.
+      Sources: <a href="https://razorpay.com/docs/payments/magic-checkout">Magic Checkout docs</a> · <a href="https://razorpay.com/docs/payments/magic-checkout/shopify/features.md">Shopify features</a> · <a href="https://razorpay.com/magic-checkout/">Product page</a> · <a href="https://razorpay.com/blog/enable-snapmint-buy-now-pay-later-on-razorpay-checkout/">Snapmint on Razorpay</a>.</div>
+  </section>
+
+  <section class="summary">
+    <div class="summary-panel">
+      <h4>Talk track — lead with the data, not the feature list</h4>
+      <ol>
+        <li>Razorpay Magic Checkout is a strong payment-gateway-led checkout — but it's built to concentrate volume on Razorpay's own gateway. Fastrr is PG-agnostic by design.</li>
+        <li>Razorpay's prefill and risk signals come from its payment network; Fastrr's come from Shiprocket's shipping network — a different, delivery-grounded data source.</li>
+        <li>Open with 0% MDR blended pricing and pay-after-delivery for margin-conscious, prepaid-hesitant merchants — these are the two hardest points for a PG-led checkout to match.</li>
+        <li>Walk the shopper's journey: delivery date on the product page, upsell in the cart, Quick Pay and SSO at checkout, then routing and Pay After Delivery at payment. Razorpay can match single features. It cannot match the path, because the path runs on delivery data.</li>
+      </ol>
+    </div>
+    <div class="stamp">
+      <div class="ring">Verified<br>Data</div>
+      <div class="line1">Logistics-led, not PG-led</div>
+      <div class="line2">Address, risk &amp; delivery signals sourced from Shiprocket's own courier network</div>
+    </div>
+  </section>
+
+  <footer>Prepared for internal sales use · Shiprocket | Fastrr vs Razorpay Magic Checkout</footer>
+</div>
+</body>
+</html>
